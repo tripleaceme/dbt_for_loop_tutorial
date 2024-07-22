@@ -1,0 +1,33 @@
+------------------------------------------
+
+-- Dynamic Discount Bins Without Jinja
+
+------------------------------------------
+
+select
+       "Order ID",
+       "Customer ID",
+       case when "Discount" between 0 and 0.1 then 'Discount_0.0' else null end as discount_bin_0_0,
+       case when "Discount" between 0.1 and 0.2 then 'Discount_0.1' else null end as discount_bin_0_1,
+       case when "Discount" between 0.2 and 0.3 then 'Discount_0.2' else null end as discount_bin_0_2,
+       case when "Discount" between 0.3 and 0.4 then 'Discount_0.3' else null end as discount_bin_0_3,
+       "Sales"
+   from {{ ref('superstore_table') }}
+
+
+------------------------------------------
+
+-- Dynamic Discount Bins With Jinja
+
+------------------------------------------
+
+select
+       "Order ID",
+       "Customer ID",
+       {% for discount_range in [0, 0.1, 0.2, 0.3, 0.4] %}
+       case when "Discount" between {{ discount_range }} and {{ discount_range + 0.1 }} 
+       then 'Discount_{{ discount_range | string | replace(".", "_") }}' else null 
+       end as discount_bin_{{ discount_range | string | replace(".", "_") }},
+       {% endfor %}
+       "Sales"
+   from {{ ref('superstore_table') }}
